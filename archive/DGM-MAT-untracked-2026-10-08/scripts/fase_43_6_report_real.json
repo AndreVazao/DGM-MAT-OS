@@ -1,0 +1,181 @@
+{
+  "fase": "43.6_real",
+  "total_observation_seconds": 182.9,
+  "answers": {
+    "1_cognition_loop_started": true,
+    "2_process_missions_called_periodically": true,
+    "3_subtasks_changed_state": false,
+    "4_mission_left_running": true,
+    "5_mission_completed": false,
+    "6_new_blockage": "Local Mission failed with: Mission timed out before execution completed."
+  },
+  "api_status_transitions": [
+    {
+      "elapsed": 0.2,
+      "from": null,
+      "to": "QUEUED",
+      "progress": 0.0,
+      "subtasks": 0,
+      "error": null
+    },
+    {
+      "elapsed": 5.3,
+      "from": "QUEUED",
+      "to": "RUNNING",
+      "progress": 0.0,
+      "subtasks": 0,
+      "error": null
+    }
+  ],
+  "local_status_transitions": [
+    {
+      "elapsed": 0.2,
+      "from": null,
+      "to": "QUEUED",
+      "progress": 0.0,
+      "subtasks": 0,
+      "error": null
+    },
+    {
+      "elapsed": 66.1,
+      "from": "QUEUED",
+      "to": "FAILED",
+      "progress": 1.0,
+      "subtasks": 0,
+      "error": "Mission timed out before execution completed."
+    }
+  ],
+  "final_api_mission": {
+    "mission_id": "mission_40a4ba5e",
+    "goal": "phase 43.6 cognition test",
+    "status": "RUNNING",
+    "created_at": "2026-05-30T18:21:16.477066",
+    "progress": 0.0,
+    "logs": [
+      "Mission created with goal: phase 43.6 cognition test",
+      "Status changed to QUEUED",
+      "Action approved in SafeActionQueue. Starting execution."
+    ],
+    "error": null,
+    "metadata": {
+      "action_id": 4
+    },
+    "result": null,
+    "output": null
+  },
+  "final_local_mission": {
+    "mission_id": "mission_40a4ba5e",
+    "status": "FAILED",
+    "progress": 1.0,
+    "logs": [
+      "Mission created with goal: phase 43.6 cognition test",
+      "Status changed to QUEUED",
+      "Mission execution failed: Mission timed out before execution completed.",
+      "Status changed to FAILED"
+    ],
+    "error": "Mission timed out before execution completed.",
+    "subtasks_count": 0
+  },
+  "final_queue": {
+    "id": 4,
+    "action_type": "MISSION_EXECUTION",
+    "payload": {
+      "mission_id": "mission_40a4ba5e",
+      "goal": "phase 43.6 cognition test"
+    },
+    "status": "COMPLETED",
+    "is_approved": true,
+    "approved_by": "fase_43_6_test_real",
+    "approved_at": "2026-05-30T18:21:29.363505",
+    "created_at": "2026-05-30T18:21:16.507883",
+    "audit_trail": [
+      {
+        "timestamp": "2026-05-30T18:21:16.505880",
+        "status": "QUEUED",
+        "message": "Action enqueued"
+      },
+      {
+        "timestamp": "2026-05-30T18:21:29.363505",
+        "status": "APPROVED",
+        "operator": "fase_43_6_test_real"
+      },
+      {
+        "timestamp": "2026-05-30T18:21:31.662559",
+        "status": "RUNNING",
+        "message": "Action started execution"
+      },
+      {
+        "timestamp": "2026-05-30T18:21:31.816488",
+        "status": "COMPLETED",
+        "message": "Action completed successfully",
+        "result": {
+          "status": "decomposed",
+          "mission_id": "mission_40a4ba5e"
+        }
+      }
+    ],
+    "error_message": null
+  },
+  "cpu_samples": [
+    {
+      "elapsed": 0.2,
+      "cpu": 100.0,
+      "memory": 96.8
+    },
+    {
+      "elapsed": 15.4,
+      "cpu": 92.3,
+      "memory": 96.7
+    },
+    {
+      "elapsed": 30.5,
+      "cpu": 100.0,
+      "memory": 96.7
+    },
+    {
+      "elapsed": 45.7,
+      "cpu": 66.7,
+      "memory": 94.1
+    },
+    {
+      "elapsed": 60.9,
+      "cpu": 57.1,
+      "memory": 94.3
+    },
+    {
+      "elapsed": 76.1,
+      "cpu": 84.6,
+      "memory": 94.2
+    },
+    {
+      "elapsed": 91.4,
+      "cpu": 50.0,
+      "memory": 94.1
+    },
+    {
+      "elapsed": 106.8,
+      "cpu": 92.3,
+      "memory": 96.2
+    },
+    {
+      "elapsed": 122.1,
+      "cpu": 64.3,
+      "memory": 96.8
+    },
+    {
+      "elapsed": 137.3,
+      "cpu": 100.0,
+      "memory": 95.8
+    },
+    {
+      "elapsed": 152.5,
+      "cpu": 100.0,
+      "memory": 95.7
+    },
+    {
+      "elapsed": 167.7,
+      "cpu": 83.3,
+      "memory": 95.5
+    }
+  ]
+}

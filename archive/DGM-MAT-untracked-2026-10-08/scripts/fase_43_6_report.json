@@ -1,0 +1,119 @@
+{
+  "fase": "43.6",
+  "total_observation_seconds": 66.5,
+  "answers": {
+    "1_cognition_loop_started": true,
+    "2_process_missions_called_periodically": true,
+    "3_subtasks_changed_state": false,
+    "4_mission_left_running": true,
+    "5_mission_completed": false,
+    "6_new_blockage": "Mission stuck in FAILED"
+  },
+  "status_transitions": [
+    {
+      "from": null,
+      "to": "QUEUED",
+      "at_seconds": 0.8,
+      "progress": 0.0,
+      "logs_count": 2,
+      "last_log": "Status changed to QUEUED",
+      "subtasks": 0,
+      "error": null
+    },
+    {
+      "from": "QUEUED",
+      "to": "FAILED",
+      "at_seconds": 66.5,
+      "progress": 1.0,
+      "logs_count": 4,
+      "last_log": "Status changed to FAILED",
+      "subtasks": 0,
+      "error": "Mission timed out before execution completed."
+    }
+  ],
+  "final_mission": {
+    "mission_id": "mission_3ee1bd32",
+    "goal": "phase 43.6 cognition test",
+    "status": "FAILED",
+    "progress": 1.0,
+    "logs": [
+      "Mission created with goal: phase 43.6 cognition test",
+      "Status changed to QUEUED",
+      "Mission execution failed: Mission timed out before execution completed.",
+      "Status changed to FAILED"
+    ],
+    "error": "Mission timed out before execution completed.",
+    "subtasks": [],
+    "metadata_keys": [
+      "action_id",
+      "result",
+      "output",
+      "error",
+      "completed_at"
+    ],
+    "has_result": true,
+    "has_output": true
+  },
+  "final_queue": {
+    "id": 2,
+    "action_type": "MISSION_EXECUTION",
+    "payload": {
+      "mission_id": "mission_3ee1bd32",
+      "goal": "phase 43.6 cognition test"
+    },
+    "status": "APPROVED",
+    "is_approved": true,
+    "approved_by": "fase_43_6_test",
+    "approved_at": "2026-05-30T18:14:31.445582",
+    "created_at": "2026-05-30T18:14:29.328846",
+    "audit_trail": [
+      {
+        "timestamp": "2026-05-30T18:14:29.306980",
+        "status": "QUEUED",
+        "message": "Action enqueued"
+      },
+      {
+        "timestamp": "2026-05-30T18:14:31.445582",
+        "status": "APPROVED",
+        "operator": "fase_43_6_test"
+      }
+    ],
+    "error_message": null
+  },
+  "final_cognition": {
+    "instance_exists": true,
+    "running": true,
+    "cycle_count": 2,
+    "thread_alive": true,
+    "error": null
+  },
+  "cpu_samples": [
+    {
+      "elapsed": 0.8,
+      "cpu": 100.0,
+      "memory": 96.9
+    },
+    {
+      "elapsed": 16.0,
+      "cpu": 91.7,
+      "memory": 94.3
+    },
+    {
+      "elapsed": 31.1,
+      "cpu": 84.6,
+      "memory": 94.3
+    },
+    {
+      "elapsed": 46.2,
+      "cpu": 0.0,
+      "memory": 94.0
+    },
+    {
+      "elapsed": 61.4,
+      "cpu": 66.7,
+      "memory": 94.0
+    }
+  ],
+  "cognition_cycle_count": 2,
+  "observation_count": 21
+}

@@ -1,0 +1,315 @@
+[
+  {
+    "timestamp": "2026-05-30T18:21:16.409128",
+    "tag": "STEP_1_START",
+    "data": {
+      "action": "Verifying API server is running on 8181"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:16.459126",
+    "tag": "API_HEALTH_CHECK",
+    "data": {
+      "score": 100,
+      "status": "NOMINAL",
+      "breakdown": {
+        "bootstrap": "25/25",
+        "state_store": "20/20",
+        "providers": "20/20",
+        "repos": "15/15",
+        "agents": "10/10",
+        "memory": "10/10"
+      },
+      "warnings": [
+        "Providers: Startup provider scan deferred by low-memory profile."
+      ],
+      "critical": [],
+      "degradation_reasons": [],
+      "low_memory_profile": true,
+      "runtime_profile": "low_memory",
+      "resources": {
+        "cpu": 99.2,
+        "memory": 97.4
+      }
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:16.459126",
+    "tag": "STEP_2_START",
+    "data": {
+      "action": "Creating mission via API"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:16.562432",
+    "tag": "API_MISSION_CREATED",
+    "data": {
+      "status": "success",
+      "mission_id": "mission_40a4ba5e"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:18.603362",
+    "tag": "FOUND_MISSION_INFO",
+    "data": {
+      "mission_id": "mission_40a4ba5e",
+      "action_id": 4
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:18.604363",
+    "tag": "STEP_3_START",
+    "data": {
+      "action": "Instantiating real CognitionLoop"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:26.308391",
+    "tag": "COGNITION_LOOP_CREATED",
+    "data": {
+      "class": "CognitionLoop",
+      "config": {
+        "enabled": true,
+        "execution_mode": "SAFE",
+        "modes": {
+          "SAFE": {
+            "execution_permissions": [
+              "read",
+              "test"
+            ],
+            "auto_merge": false,
+            "self_modification": false
+          },
+          "ANALYZE_ONLY": {
+            "execution_permissions": [
+              "read"
+            ],
+            "auto_merge": false,
+            "self_modification": false
+          },
+          "APPROVAL_REQUIRED": {
+            "execution_permissions": [
+              "read",
+              "write",
+              "test"
+            ],
+            "auto_merge": false,
+            "self_modification": true
+          },
+          "AUTONOMOUS_PATCHING": {
+            "execution_permissions": [
+              "read",
+              "write",
+              "test"
+            ],
+            "auto_merge": true,
+            "self_modification": true
+          },
+          "STRATEGIC_EVOLUTION": {
+            "execution_permissions": [
+              "read",
+              "write",
+              "test",
+              "delete"
+            ],
+            "auto_merge": true,
+            "self_modification": true
+          }
+        },
+        "max_parallel_tasks": 2,
+        "provider_sync_enabled": true,
+        "auto_merge_enabled": false,
+        "approval_required": true,
+        "execution_budget": 10,
+        "repo_scan_interval": 3600,
+        "night_cycle_start": "02:00",
+        "night_cycle_duration_hours": 4,
+        "memory_consolidation_interval": 86400,
+        "loop_interval": 60
+      },
+      "running": false
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:29.306565",
+    "tag": "COGNITION_INITIALIZED",
+    "data": {
+      "thread_alive": true,
+      "loop_instance_exists": true,
+      "loop_running": true,
+      "cognition_error": null
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:29.306565",
+    "tag": "STEP_4_START",
+    "data": {
+      "action": "Approving action in database"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:29.356864",
+    "tag": "QUEUE_ACTION_BEFORE",
+    "data": {
+      "id": 4,
+      "action_type": "MISSION_EXECUTION",
+      "payload": {
+        "mission_id": "mission_40a4ba5e",
+        "goal": "phase 43.6 cognition test"
+      },
+      "status": "QUEUED",
+      "is_approved": false,
+      "approved_by": null,
+      "approved_at": null,
+      "created_at": "2026-05-30T18:21:16.507883",
+      "audit_trail": [
+        {
+          "timestamp": "2026-05-30T18:21:16.505880",
+          "status": "QUEUED",
+          "message": "Action enqueued"
+        }
+      ],
+      "error_message": null
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:31.445865",
+    "tag": "QUEUE_ACTION_AFTER_APPROVE",
+    "data": {
+      "id": 4,
+      "action_type": "MISSION_EXECUTION",
+      "payload": {
+        "mission_id": "mission_40a4ba5e",
+        "goal": "phase 43.6 cognition test"
+      },
+      "status": "APPROVED",
+      "is_approved": true,
+      "approved_by": "fase_43_6_test_real",
+      "approved_at": "2026-05-30T18:21:29.363505",
+      "created_at": "2026-05-30T18:21:16.507883",
+      "audit_trail": [
+        {
+          "timestamp": "2026-05-30T18:21:16.505880",
+          "status": "QUEUED",
+          "message": "Action enqueued"
+        },
+        {
+          "timestamp": "2026-05-30T18:21:29.363505",
+          "status": "APPROVED",
+          "operator": "fase_43_6_test_real"
+        }
+      ],
+      "error_message": null
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:31.445865",
+    "tag": "STEP_5_START",
+    "data": {
+      "action": "Observing for 180 seconds"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:31.627562",
+    "tag": "API_MISSION_TRANSITION",
+    "data": {
+      "elapsed": 0.2,
+      "from": null,
+      "to": "QUEUED",
+      "progress": 0.0,
+      "subtasks": 0,
+      "error": null
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:31.628560",
+    "tag": "LOCAL_MISSION_TRANSITION",
+    "data": {
+      "elapsed": 0.2,
+      "from": null,
+      "to": "QUEUED",
+      "progress": 0.0,
+      "subtasks": 0,
+      "error": null
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:31.762881",
+    "tag": "QUEUE_STATUS_SAMPLE",
+    "data": {
+      "elapsed": 0.2,
+      "status": "RUNNING"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:21:36.790551",
+    "tag": "API_MISSION_TRANSITION",
+    "data": {
+      "elapsed": 5.3,
+      "from": "QUEUED",
+      "to": "RUNNING",
+      "progress": 0.0,
+      "subtasks": 0,
+      "error": null
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:22:02.123834",
+    "tag": "QUEUE_STATUS_SAMPLE",
+    "data": {
+      "elapsed": 30.5,
+      "status": "COMPLETED"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:22:32.477426",
+    "tag": "QUEUE_STATUS_SAMPLE",
+    "data": {
+      "elapsed": 60.9,
+      "status": "COMPLETED"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:22:37.545853",
+    "tag": "LOCAL_MISSION_TRANSITION",
+    "data": {
+      "elapsed": 66.1,
+      "from": "QUEUED",
+      "to": "FAILED",
+      "progress": 1.0,
+      "subtasks": 0,
+      "error": "Mission timed out before execution completed."
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:23:02.979569",
+    "tag": "QUEUE_STATUS_SAMPLE",
+    "data": {
+      "elapsed": 91.4,
+      "status": "COMPLETED"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:23:33.649421",
+    "tag": "QUEUE_STATUS_SAMPLE",
+    "data": {
+      "elapsed": 122.1,
+      "status": "COMPLETED"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:24:04.064344",
+    "tag": "QUEUE_STATUS_SAMPLE",
+    "data": {
+      "elapsed": 152.5,
+      "status": "COMPLETED"
+    }
+  },
+  {
+    "timestamp": "2026-05-30T18:24:34.286791",
+    "tag": "STEP_6_START",
+    "data": {
+      "action": "Generating final report"
+    }
+  }
+]
