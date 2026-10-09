@@ -1,0 +1,298 @@
+# Path: C:\ProgramasGodMode\DGM-MAT\core\api\runtime_api.py
+
+import json
+import os
+import time
+import psutil
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
+from core.storage.storage_manager import storage_manager
+from core.repository_cognition.repo_scanner import CognitiveRepoScanner
+from core.autonomy.mission_engine import mission_engine
+from core.workspace.workspace_manager import workspace_manager
+from core.connectors.boundary import create_runtime_connectors
+from core.runtime.runtime_state_store import state_store, StateEvents
+from core.runtime.safe_action_queue import SafeActionQueue
+from core.execution.approval_manager import ApprovalManager
+from core.provider_sync.provider_registry import provider_registry
+from core.runtime.reality_snapshot import RealitySnapshotService
+from core.realtime.websocket_manager import manager
+
+router = APIRouter(prefix="/runtime", tags=["runtime"])
+
+# Health observations older than this are historical evidence, not current availability.
+PROVIDER_OBSERVATION_STALE_AFTER_SECONDS = 300
+connectors = create_runtime_connectors()
+obsidian_connector = connectors["obsidian"]
+
+class MissionCreate(BaseModel):
+    goal: str
+    description: Optional[str] = ""
+
+class ApprovalDecision(BaseModel):
+    decision: str # "approve" or "reject"
+
+@router.websocket("/ws")
+async def runtime_websocket_endpoint(websocket: WebSocket):
+    """Compatibility websocket for clients that connect to /runtime/ws."""
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+@router.get("/health")
+def get_runtime_health():
+    """Unified health endpoint pulling from state_store."""
+    truth = state_store.get_snapshot()
+    return truth.health or {"status": "unknown"}
+
+@router.get("/status")
+def get_runtime_status():
+    """Comprehensive status pulling from state_store."""
+    truth = state_store.get_snapshot()
+    return {
+        "status": truth.runtime_status,
+        "is_degraded": truth.is_degraded,
+        "resources": {
+            "cpu": psutil.cpu_percent(),
+            "memory": psutil.virtual_memory().percent
+        },
+        "agents": truth.agents,
+        "missions_active": len(truth.missions)
+    }
+
+@router.get("/state")
+def get_runtime_state():
+    """Compatibility endpoint for cockpit clients that request /runtime/state."""
+    return state_store.to_dict()
+
+@router.get("/truth")
+def get_runtime_truth():
+    """Requirement 2: Expose single source of truth."""
+    return state_store.to_dict()
+
+@router.get("/reality")
+def get_runtime_reality():
+    """Requirement 2: Expose observed reality."""
+    return state_store.get_snapshot().reality
+
+@router.get("/degradation")
+def get_runtime_degradation():
+    """Requirement 4: Expose degradation details."""
+    truth = state_store.get_snapshot()
+    return {
+        "is_degraded": truth.is_degraded,
+        "degradation": truth.degradation
+    }
+
+@router.get("/repo_scan")
+def get_repo_scan():
+    """Restored for compatibility with existing tests."""
+    scanner = CognitiveRepoScanner()
+    try:
+        results = scanner.scan()
+        return {"status": "success", "files_scanned": len(results), "results": results[:100]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/memory/stats")
+def get_memory_stats():
+    """Restored for compatibility with existing tests."""
+    return state_store.get_snapshot().memory_stats
+
+@router.get("/memory")
+def get_memory_status():
+    memory_stats = state_store.get_snapshot().memory_stats
+    return {
+        "status": "recognized",
+        "manager": "core.memory.memory_manager",
+        "stats": memory_stats,
+    }
+
+def _provider_freshness(provider: Dict[str, Any], now: Optional[float] = None) -> Dict[str, Any]:
+    """Annotate a provider record without promoting missing/stale evidence to availability."""
+    current_time = time.time() if now is None else now
+    record = dict(provider)
+    record_age = None
+    snapshot_observed_at = record.get("snapshot_observed_at")
+    if isinstance(snapshot_observed_at, (int, float)) and snapshot_observed_at > 0:
+        record_age = max(0, int(current_time - snapshot_observed_at))
+
+    health_observed_at = record.get("health_observed_at")
+    reported_available = record.get("reported_available", record.get("available")) is True
+    health_age = None
+    if (
+        record.get("availability_observed") is True
+        and isinstance(health_observed_at, (int, float))
+        and health_observed_at > 0
+    ):
+        health_age = max(0, int(current_time - health_observed_at))
+        freshness_status = (
+            "stale"
+            if health_age > PROVIDER_OBSERVATION_STALE_AFTER_SECONDS
+            else "fresh"
+        )
+    else:
+        freshness_status = "unobserved"
+
+    record["reported_available"] = reported_available
+    record["available"] = reported_available and freshness_status == "fresh"
+    record["freshness_status"] = freshness_status
+    record["health_observation_age_seconds"] = health_age
+    record["provider_record_age_seconds"] = record_age
+    record["freshness_threshold_seconds"] = PROVIDER_OBSERVATION_STALE_AFTER_SECONDS
+    return record
+
+
+def _provider_subsystem_summary(registered: List[str], providers: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Describe registry state without confusing API success with provider health."""
+    observed_providers = [
+        provider for provider in providers
+        if provider.get("availability_observed") is True
+    ]
+    stale_observations = [
+        provider for provider in observed_providers
+        if provider.get("freshness_status") == "stale"
+    ]
+    reported_available_count = sum(
+        1 for provider in observed_providers if provider.get("available") is True
+    )
+
+    if not registered:
+        state = "empty_registry"
+    elif observed_providers and len(stale_observations) == len(observed_providers):
+        state = "stale_availability_observations"
+    elif observed_providers:
+        state = "availability_reported"
+    else:
+        state = "registered_no_availability_reported"
+
+    return {
+        "state": state,
+        "registered_count": len(registered),
+        "registered_names": list(registered),
+        "availability_observation_count": len(observed_providers),
+        "stale_observation_count": len(stale_observations),
+        "reported_available_count": reported_available_count,
+        "availability_reported": bool(observed_providers),
+        "source": "state_store_or_reality_snapshot",
+    }
+
+
+@router.get("/providers")
+def list_providers():
+    snapshot = state_store.get_snapshot()
+    providers = list(snapshot.providers.values())
+
+    if not providers:
+        providers = RealitySnapshotService()._get_providers_status()
+        state_store.dispatch(StateEvents.PROVIDERS_RECONCILED, {
+            "providers": providers,
+            "observed_at": time.time(),
+        })
+
+    providers = [_provider_freshness(provider) for provider in providers]
+    registered = provider_registry.list_providers()
+    return {
+        "status": "success",
+        "providers": providers,
+        "registered": registered,
+        "provider_subsystem": _provider_subsystem_summary(registered, providers),
+    }
+
+@router.get("/governance")
+def get_governance_status():
+    truth = state_store.get_snapshot()
+    resources = {
+        "cpu": psutil.cpu_percent(),
+        "memory": psutil.virtual_memory().percent,
+    }
+    return {
+        "status": truth.degradation.get("status", "unknown"),
+        "is_degraded": truth.is_degraded,
+        "resources": resources,
+        "degradation": truth.degradation,
+    }
+
+@router.get("/autonomy")
+def get_autonomy_status():
+    truth = state_store.get_snapshot()
+    return {
+        "status": truth.runtime_status,
+        "mode": "LOW_MEMORY" if truth.health.get("low_memory_profile") else "STANDARD",
+        "missions_active": len(truth.missions),
+        "tasks": truth.tasks,
+        "memory_stats": truth.memory_stats,
+    }
+
+@router.get("/workspace/scan")
+def scan_workspace():
+    """Requirement 4: Automatic repository discovery and health scan."""
+    return workspace_manager.scan_workspace()
+
+@router.get("/obsidian/index")
+def index_obsidian():
+    """Requirement 6: Obsidian vault indexing."""
+    return obsidian_connector.index_vault()
+
+@router.post("/missions")
+def create_mission(mission_data: MissionCreate):
+    """Requirement 7: Mission creation interface."""
+    # Let the Mission Consumer (CognitionLoop) handle transitions
+    mission = mission_engine.create_mission(mission_data.goal, mission_data.description)
+    return {"status": "success", "mission_id": mission.mission_id}
+
+@router.get("/missions")
+def list_missions():
+    return [
+        {
+            "mission_id": m.mission_id,
+            "goal": m.goal,
+            "status": m.status.value,
+            "created_at": getattr(m, 'created_at', None).isoformat() if hasattr(m, 'created_at') and m.created_at else None,
+            "progress": m.progress,
+            "logs": m.logs,
+            "error": m.error,
+            "metadata": m.metadata,
+            "result": m.metadata.get("result"),
+            "output": m.metadata.get("output")
+        }
+        for m in mission_engine.active_missions.values()
+    ]
+
+@router.post("/approvals/{request_id}")
+def judge_approval(request_id: str, decision: ApprovalDecision):
+    """Requirement 7: Functional approval/reject workflow."""
+    success = mission_engine.handle_approval_decision(request_id, decision.decision)
+    if not success:
+        raise HTTPException(status_code=404, detail="Approval request not found")
+    return {"status": "success", "request_id": request_id, "decision": decision.decision}
+
+@router.get("/approvals")
+def list_approvals():
+    manager = ApprovalManager()
+    return [
+        {
+            "id": item["task_id"],
+            "status": item["status"].value,
+            "diff": item.get("diff", ""),
+            "risk_score": item.get("risk_score", 0.0),
+            "impact": item.get("impact", "LOW"),
+            "timestamp": item.get("requested_at"),
+            "decision_at": item.get("decision_at"),
+            "reason": item.get("reason"),
+        }
+        for item in manager.get_pending_approvals()
+    ]
+
+@router.get("/queue")
+def get_queue_status():
+    """Requirement 5: Add queue inspection endpoint."""
+    queue = SafeActionQueue()
+    return {
+        "health": queue.get_health(),
+        "recent_actions": queue.list_all(limit=20)
+    }
