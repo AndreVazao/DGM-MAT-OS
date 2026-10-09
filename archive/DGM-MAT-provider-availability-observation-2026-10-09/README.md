@@ -7,6 +7,6 @@ Exact pre-change copies of the canonical files below were preserved before the a
 - `test_provider_api_truth.py` — `0DF1AFED0A5B7DC2E83349D0F402434FB61BAB33B6D393169CB97609D07C51C7`
 - `test_reality_snapshot.py` — `FF3968A5E0DFF570A2B074AF23661D1B208C4C6144DEF96FA85C216B5D0D3F17`
 
-The pre-change API summary treated `available: false` as if no availability result had been reported, although the field itself was present. The snapshot also emitted `available: false` by default for unregistered source files and deferred checks, without distinguishing that default from an observed result. The correction will add an explicit observation marker and make the API summarize only observed availability state.
+The pre-change API summary treated `available: false` as if no availability result had been reported, although the field itself was present. The snapshot also emitted `available: false` by default for unregistered source files and deferred checks, without distinguishing that default from an observed result. The canonical correction adds an explicit `availability_observed` marker and makes the API summarize only observed availability state.
 
 Historical copies only; do not copy the old inference behavior back into canonical code.
